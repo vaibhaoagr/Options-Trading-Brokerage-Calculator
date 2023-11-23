@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options Calculator</title>
+  <style>
+    /* Add any additional CSS styling here */
+    .neg {
+      color: red;
+    }
+
+    .pos {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="brokerage-columns column equity-calcs calc-wrapper" id="options-equity-calc">
+    <h5 class="equity-head">F&amp;O - Options</h5>
+    <div class="row calc-inputs around">
+      <div class="four columns brokerage-calculator-input">
+        <label>BUY</label>
+        <input type="number" min="0" title="Buy Price" oninput="cal_options()" value="100" class="opt_bp options">
+      </div>
+      <div class="four columns brokerage-calculator-input">
+        <label>SELL</label>
+        <input type="number" min="0" title="Sell Price" oninput="cal_options()" value="110" class="opt_sp options">
+      </div>
+      <div class="four columns brokerage-calculator-input">
+        <label>QUANTITY</label>
+        <input type="number" min="0" title="Quantity" oninput="cal_options()" value="400" class="opt_qty options">
+      </div>
+    </div>
+    <div class="row">
+      <div class="six columns equity-radio text-center">
+        <input id="radio41" type="radio" name="listing-market4" onchange="cal_options()" value="NSE" class="opt_nse" checked="">
+        <label for="radio41">NSE</label>
+      </div>
+      <div class="six columns equity-radio text-center">
+        <input id="radio42" type="radio" name="listing-market4" onchange="cal_options()" value="BSE" class="opt_bse_option">
+        <label for="radio42">BSE</label>
+      </div>
+    </div>
+
+<br>
+<br>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Investment</label>
+      <span class="five columns" id="opt_insvest">0</span>
+    </div>
+<br>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Gain</label>
+      <span class="five columns" id="opt_gain">0</span>
+    </div>
+<br>
+
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Exchange Fees</label>
+      <span class="five columns" id="opt_total">0</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Our Fees</label>
+      <span class="five columns" id="opt_total_our">0</span>
+    </div>
+<br>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Total Fees</label>
+      <span class="five columns" id="total_fee">0</span>
+    </div>
+<br>
+    
+    <div class="row net-profit" id="opt_profit">
+      <label class="six columns">Per Trade Net P&amp;L</label>
+      <span class="six columns profit pos" id="opt_pnl">0</span>
+    </div>
+<br>
+
+<br>
+<br>
+
+<div class="row valuation-block equity-list">
+      <label class="seven columns">Turnover</label>
+      <span class="five columns" id="opt_turn">1542500</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Brokerage</label>
+      <span class="five columns" id="opt_brokerage">40</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">STT total</label>
+      <span class="five columns" id="opt_stt">495</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Exchange txn charge</label>
+      <span class="five columns" id="opt_etc">778.96</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Clearing charge</label>
+      <span class="five columns" id="opt_cc">0</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">GST</label>
+      <span class="five columns" id="opt_st">147.69</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">SEBI charges</label>
+      <span class="five columns" id="sebi_opt">1.54</span>
+    </div>
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Stamp duty</label>
+      <span class="five columns" id="stamp_duty_opt">23</span>
+    </div>
+
+    <div class="row valuation-block equity-list">
+      <label class="seven columns">Points to breakeven</label>
+      <span class="five columns" id="opt_breakeven">0.3</span>
+    </div>
+
+  </div>
+
+  <script>function cal_options(){
+		bp = parseFloat(parseFloat(document.getElementsByClassName("opt_bp")[0].value).toFixed(2));
+		sp = parseFloat(parseFloat(document.getElementsByClassName("opt_sp")[0].value).toFixed(2));
+		qty = parseFloat(parseFloat(document.getElementsByClassName("opt_qty")[0].value).toFixed(2));
+
+		if (isNaN(qty) || (isNaN(bp) && isNaN(sp))) {
+			var elements = document.querySelector("#options-equity-calc").querySelectorAll(".valuation-block");
+			for (var i = 0; i < elements.length; i++) {
+				elements[i].querySelector("span").innerHTML = 0
+			}
+			document.getElementById("opt_pnl").innerHTML = 0;
+			return;
+		}
+
+		var brokerage = 40;
+
+		if (isNaN(bp) || bp == 0) {
+			bp = 0;
+			bse_tran_charge_buy = 0;
+			brokerage = 20;
+		}
+		if (isNaN(sp) || sp == 0) {
+			sp = 0;
+			bse_tran_charge_sell = 0;
+			brokerage = 20;
+		}
+
+		var turnover = parseFloat(parseFloat((bp+sp)*qty).toFixed(2));
+		var gain = parseFloat(parseFloat((sp-bp)*qty).toFixed(2));
+		var insvest = parseFloat(parseFloat((bp)*qty).toFixed(2));
+
+		var stt_total = Math.round(parseFloat(parseFloat(sp * qty * 0.000625).toFixed(2)));
+		var sebi_charges = parseFloat(parseFloat(turnover*0.000001).toFixed(2));
+
+		var etc = (document.getElementsByClassName("opt_nse")[0].checked) ? parseFloat(parseFloat(0.0005*turnover).toFixed(2)) : parseFloat(parseFloat(0.00005*turnover).toFixed(2));
+
+		var nse_ipft = document.getElementsByClassName("opt_nse")[0].checked ? parseFloat(parseFloat(0.000005 * turnover).toFixed(2)) : 0
+		etc = parseFloat(parseFloat(etc + nse_ipft).toFixed(2));
+
+		var stax = parseFloat(parseFloat(0.18 * (brokerage + etc + sebi_charges)).toFixed(2));
+
+
+		var stamp_charges = Math.round(parseFloat(parseFloat(bp*qty*0.00003).toFixed(2)));
+
+		var total_tax = parseFloat(parseFloat(brokerage + stt_total + etc + stax + sebi_charges + stamp_charges).toFixed(2));
+        var total_our = parseFloat(parseFloat(brokerage + stt_total + etc + stax + sebi_charges + stamp_charges).toFixed(2));
+         var total_fees = parseFloat(parseFloat(total_tax + total_our).toFixed(2));
+
+
+
+		var breakeven = parseFloat(parseFloat(total_tax / qty).toFixed(2));
+		breakeven = isNaN(breakeven) ? 0 : breakeven
+
+var net_profit = parseFloat(parseFloat(((sp - bp) * qty) - (total_tax + total_tax )).toFixed(2))
+
+
+		document.querySelector("#opt_insvest").innerHTML = insvest;
+		document.querySelector("#opt_gain").innerHTML = gain;
+		document.querySelector("#opt_turn").innerHTML = turnover;    
+		document.querySelector("#opt_brokerage").innerHTML = brokerage;
+		document.querySelector("#opt_stt").innerHTML = stt_total;
+		document.querySelector("#opt_etc").innerHTML = etc;
+		document.querySelector("#opt_st").innerHTML = stax;
+		document.querySelector("#sebi_opt").innerHTML = sebi_charges;
+		document.querySelector("#stamp_duty_opt").innerHTML = stamp_charges;
+		document.querySelector("#opt_total").innerHTML = total_tax;
+		document.querySelector("#opt_total_our").innerHTML = total_our;
+		document.querySelector("#total_fee").innerHTML = total_fees;     
+		document.querySelector("#opt_breakeven").innerHTML = breakeven;
+		document.querySelector("#opt_pnl").innerHTML = net_profit;
+		if (parseFloat(net_profit) > 0) {
+			document.querySelector("#opt_pnl").classList.remove("neg")
+			document.querySelector("#opt_pnl").classList.add("pos")
+		} else {
+			document.querySelector("#opt_pnl").classList.remove("pos")
+			document.querySelector("#opt_pnl").classList.add("neg")
+		}
+	}
+
+  </script>
+
+</body>
+
+</html>
